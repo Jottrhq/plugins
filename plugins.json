@@ -28,11 +28,11 @@
       "displayName": "RSS Feed Reader",
       "description": "Adds the RSS feed reader tab.",
       "repository": "https://github.com/Jottrhq/rss-feed-plugin",
-      "latestVersion": "0.1.0",
+      "latestVersion": "0.3.0",
       "defaultEnabled": true,
       "versions": [
         {
-          "version": "0.1.0",
+          "version": "0.3.",
           "package": {
             "downloadUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.1.0/rss-feed-0.1.0.zip",
             "checksumUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.1.0/rss-feed-0.1.0.zip.sha256"
