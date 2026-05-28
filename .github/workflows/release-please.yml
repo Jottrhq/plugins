@@ -1,0 +1,28 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate plugin index
+        run: python scripts/validate-plugins-json.py plugins.json --checksum plugins.json.sha256
+
+  release-please:
+    needs: validate
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
