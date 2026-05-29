@@ -3,6 +3,7 @@
   "defaultOwner": "Jottrhq",
   "plugins": [
     "browser-plugin",
-    "rss-feed-plugin"
+    "rss-feed-plugin",
+    "mermaid-charts-plugin"
   ]
 }
