@@ -42,7 +42,7 @@ jobs:
         run: python scripts/add-plugin-source.py "${{ inputs.plugin }}"
       - name: Sync plugin index from releases
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.PLUGIN_SYNC_TOKEN || github.token }}
         run: python scripts/sync-plugin-index.py
       - name: Validate generated index
         run: python scripts/validate-plugins-json.py plugins.json --checksum plugins.json.sha256

@@ -6,7 +6,6 @@ import json
 import os
 import re
 import sys
-import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -19,16 +18,31 @@ def fail(message):
     raise RuntimeError(message)
 
 
-def request_json(url, token=None):
-    request = urllib.request.Request(url, headers=api_headers(token))
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+def http_error_message(url, exc, context):
+    hint = ""
+    if exc.code == 404:
+        hint = " Check the repository exists, has a published release, and the token can read it."
+    elif exc.code in {401, 403}:
+        hint = " Check the token permissions for this repository."
+    return f"{context}: HTTP {exc.code} for {url}.{hint}"
 
 
-def request_bytes(url, token=None):
+def request_json(url, token=None, context="GitHub API request"):
     request = urllib.request.Request(url, headers=api_headers(token))
-    with urllib.request.urlopen(request, timeout=60) as response:
-        return response.read()
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as exc:
+        fail(http_error_message(url, exc, context))
+
+
+def request_bytes(url, token=None, context="download"):
+    request = urllib.request.Request(url, headers=api_headers(token))
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            return response.read()
+    except urllib.error.HTTPError as exc:
+        fail(http_error_message(url, exc, context))
 
 
 def api_headers(token=None):
@@ -36,13 +50,6 @@ def api_headers(token=None):
         "Accept": "application/vnd.github+json",
         "User-Agent": "jottr-plugin-index-sync",
     }
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    return headers
-
-
-def raw_headers(token=None):
-    headers = {"User-Agent": "jottr-plugin-index-sync"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
     return headers
@@ -98,20 +105,19 @@ def github_repo_url(owner, repo):
     return f"https://github.com/{owner}/{repo}"
 
 
-def raw_file_url(owner, repo, ref, path):
-    return f"https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}"
-
-
 def get_release(owner, repo, token):
     url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
-    return request_json(url, token)
+    return request_json(url, token, f"{owner}/{repo}: fetch latest release")
 
 
 def get_manifest(owner, repo, tag_name, token):
-    url = raw_file_url(owner, repo, tag_name, "plugin.json")
-    request = urllib.request.Request(url, headers=raw_headers(token))
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/plugin.json?ref={tag_name}"
+    request = urllib.request.Request(url, headers={**api_headers(token), "Accept": "application/vnd.github.raw+json"})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as exc:
+        fail(http_error_message(url, exc, f"{owner}/{repo}@{tag_name}: fetch plugin.json"))
 
 
 def get_asset(release, asset_name):
@@ -130,14 +136,22 @@ def version_from_tag(tag_name):
 
 
 def verify_assets(plugin_id, version, zip_asset, checksum_asset, token):
-    checksum_text = request_bytes(checksum_asset["browser_download_url"], token).decode("utf-8").strip()
+    checksum_text = request_bytes(
+        checksum_asset["browser_download_url"],
+        token,
+        f"{plugin_id} {version}: download checksum asset",
+    ).decode("utf-8").strip()
     expected = checksum_text.split()[0] if checksum_text else ""
     if not re.fullmatch(r"[0-9a-fA-F]{64}", expected):
         fail(f"{plugin_id} {version}: checksum asset does not start with a SHA-256 digest")
     zip_name = zip_asset["name"]
     if zip_name not in checksum_text:
         fail(f"{plugin_id} {version}: checksum asset does not reference {zip_name}")
-    zip_data = request_bytes(zip_asset["browser_download_url"], token)
+    zip_data = request_bytes(
+        zip_asset["browser_download_url"],
+        token,
+        f"{plugin_id} {version}: download zip asset",
+    )
     actual = sha256_bytes(zip_data)
     if actual.lower() != expected.lower():
         fail(f"{plugin_id} {version}: zip checksum mismatch: expected {expected}, got {actual}")
