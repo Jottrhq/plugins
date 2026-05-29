@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-28T00:00:00Z",
+  "updatedAt": "2026-05-29T08:48:53Z",
   "checksumAlgorithm": "sha256",
   "plugins": [
     {
@@ -8,14 +8,14 @@
       "displayName": "Browser Panel",
       "description": "Adds the integrated browser side panel and browser search commands.",
       "repository": "https://github.com/Jottrhq/browser-plugin",
-      "latestVersion": "0.1.0",
+      "latestVersion": "0.0.1",
       "defaultEnabled": true,
       "versions": [
         {
-          "version": "0.1.0",
+          "version": "0.0.1",
           "package": {
-            "downloadUrl": "https://github.com/Jottrhq/browser-plugin/releases/download/browser-panel-v0.1.0/browser-panel-0.1.0.zip",
-            "checksumUrl": "https://github.com/Jottrhq/browser-plugin/releases/download/browser-panel-v0.1.0/browser-panel-0.1.0.zip.sha256"
+            "downloadUrl": "https://github.com/Jottrhq/browser-plugin/releases/download/browser-panel-v0.0.1/browser-panel-0.0.1.zip",
+            "checksumUrl": "https://github.com/Jottrhq/browser-plugin/releases/download/browser-panel-v0.0.1/browser-panel-0.0.1.zip.sha256"
           },
           "source": {
             "type": "archive"
@@ -28,34 +28,14 @@
       "displayName": "RSS Feed Reader",
       "description": "Adds the RSS feed reader tab.",
       "repository": "https://github.com/Jottrhq/rss-feed-plugin",
-      "latestVersion": "0.2.0",
+      "latestVersion": "0.3.1",
       "defaultEnabled": true,
       "versions": [
         {
-          "version": "0.2.0",
+          "version": "0.3.1",
           "package": {
-            "downloadUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.2.0/rss-feed-0.2.0.zip",
-            "checksumUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.2.0/rss-feed-0.2.0.zip.sha256"
-          },
-          "source": {
-            "type": "archive"
-          }
-        }
-      ]
-    },
-    {
-      "id": "mermaid-charts",
-      "displayName": "Mermaid Chart Renderer",
-      "description": "Renders Mermaid diagrams in Markdown preview.",
-      "repository": "https://github.com/Jottrhq/mermaid-charts-plugin",
-      "latestVersion": "0.1.0",
-      "defaultEnabled": true,
-      "versions": [
-        {
-          "version": "0.1.0",
-          "package": {
-            "downloadUrl": "https://github.com/Jottrhq/mermaid-charts-plugin/releases/download/mermaid-charts-v0.1.0/mermaid-charts-0.1.0.zip",
-            "checksumUrl": "https://github.com/Jottrhq/mermaid-charts-plugin/releases/download/mermaid-charts-v0.1.0/mermaid-charts-0.1.0.zip.sha256"
+            "downloadUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.1/rss-feed-0.3.1.zip",
+            "checksumUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.1/rss-feed-0.3.1.zip.sha256"
           },
           "source": {
             "type": "archive"
