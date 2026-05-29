@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Validate source JSON
+        run: python -m json.tool plugin-sources.json >/dev/null
       - name: Validate plugin index
         run: python scripts/validate-plugins-json.py plugins.json --checksum plugins.json.sha256
 
