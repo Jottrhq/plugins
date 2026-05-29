@@ -1,0 +1,59 @@
+name: Sync Plugin Index
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Optional plugin repository to add, e.g. rss-feed-plugin or Jottrhq/rss-feed-plugin"
+        required: false
+        type: string
+  pull_request:
+    paths:
+      - plugin-sources.json
+      - plugins.json
+      - plugins.json.sha256
+      - scripts/**
+      - .github/workflows/sync-plugin-index.yml
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source JSON
+        run: python -m json.tool plugin-sources.json >/dev/null
+      - name: Validate plugin index
+        run: python scripts/validate-plugins-json.py plugins.json --checksum plugins.json.sha256
+
+  sync:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add plugin source from manual input
+        if: github.event_name == 'workflow_dispatch' && inputs.plugin != ''
+        run: python scripts/add-plugin-source.py "${{ inputs.plugin }}"
+      - name: Sync plugin index from releases
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/sync-plugin-index.py
+      - name: Validate generated index
+        run: python scripts/validate-plugins-json.py plugins.json --checksum plugins.json.sha256
+      - name: Open plugin index update PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: automation/sync-plugin-index
+          delete-branch: true
+          title: "chore: sync plugin index"
+          commit-message: "chore: sync plugin index"
+          body: |
+            Updates `plugins.json` and `plugins.json.sha256` from plugin repository releases.
+
+            The sync job verifies each release zip against its uploaded `.zip.sha256` asset before updating the index.
