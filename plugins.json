@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-05-29T16:59:06Z",
+  "updatedAt": "2026-05-30T07:50:18Z",
   "checksumAlgorithm": "sha256",
   "plugins": [
     {
@@ -8,9 +8,19 @@
       "displayName": "Browser Panel",
       "description": "Adds the integrated browser side panel and browser search commands.",
       "repository": "https://github.com/Jottrhq/browser-plugin",
-      "latestVersion": "0.0.1",
+      "latestVersion": "0.1.0",
       "defaultEnabled": true,
       "versions": [
+        {
+          "version": "0.1.0",
+          "package": {
+            "downloadUrl": "https://github.com/Jottrhq/browser-plugin/releases/download/browser-panel-vv0.0.1/browser-panel-0.1.0.zip",
+            "checksumUrl": "https://github.com/Jottrhq/browser-plugin/releases/download/browser-panel-vv0.0.1/browser-panel-0.1.0.zip.sha256"
+          },
+          "source": {
+            "type": "archive"
+          }
+        },
         {
           "version": "0.0.1",
           "package": {
@@ -56,6 +66,16 @@
           "package": {
             "downloadUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.1/rss-feed-0.3.1.zip",
             "checksumUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.1/rss-feed-0.3.1.zip.sha256"
+          },
+          "source": {
+            "type": "archive"
+          }
+        },
+        {
+          "version": "0.1.0",
+          "package": {
+            "downloadUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.0/rss-feed-0.1.0.zip",
+            "checksumUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.0/rss-feed-0.1.0.zip.sha256"
           },
           "source": {
             "type": "archive"
