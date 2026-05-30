@@ -133,6 +133,17 @@ def get_asset(release, asset_name):
     return None
 
 
+def release_zip_assets(release, plugin_id):
+    pattern = re.compile(rf"^{re.escape(plugin_id)}-({SEMVER_RE.pattern})\.zip$")
+    matches = []
+    for asset in release.get("assets", []):
+        name = asset.get("name", "")
+        match = pattern.match(name)
+        if match:
+            matches.append((match.group(1), asset))
+    return matches
+
+
 def version_from_tag(tag_name):
     matches = SEMVER_RE.findall(tag_name or "")
     if not matches:
@@ -170,33 +181,35 @@ def verify_assets(plugin_id, version, zip_asset, checksum_asset, token):
         fail(f"{plugin_id} {version}: zip checksum mismatch: expected {expected}, got {actual}")
 
 
-def build_version_entry(owner, repo, release, plugin_id, token, verify_downloads):
-    tag_name = release.get("tag_name")
-    if not tag_name:
-        fail(f"{owner}/{repo}: release has no tag_name")
-    version = version_from_tag(tag_name)
-    if not version:
-        fail(f"{owner}/{repo}@{tag_name}: release tag has no semantic version")
-    zip_name = f"{plugin_id}-{version}.zip"
-    checksum_name = f"{zip_name}.sha256"
-    zip_asset = get_asset(release, zip_name)
-    checksum_asset = get_asset(release, checksum_name)
-    if not zip_asset:
+def build_version_entries(owner, repo, release, plugin_id, token, verify_downloads):
+    tag_name = release.get("tag_name") or "untagged-release"
+    entries = []
+    for version, zip_asset in release_zip_assets(release, plugin_id):
+        checksum_name = f"{zip_asset['name']}.sha256"
+        checksum_asset = get_asset(release, checksum_name)
+        if not checksum_asset:
+            print(
+                f"Skipping {owner}/{repo}@{tag_name}: missing release asset {checksum_name}",
+                file=sys.stderr,
+            )
+            continue
+        if verify_downloads:
+            verify_assets(plugin_id, version, zip_asset, checksum_asset, token)
+        entries.append({
+            "version": version,
+            "package": {
+                "downloadUrl": zip_asset["browser_download_url"],
+                "checksumUrl": checksum_asset["browser_download_url"],
+            },
+            "source": {"type": "archive"},
+        })
+    if not entries:
         available = ", ".join(asset.get("name", "") for asset in release.get("assets", []))
-        fail(f"{owner}/{repo}@{tag_name}: missing release asset {zip_name}; available: {available}")
-    if not checksum_asset:
-        available = ", ".join(asset.get("name", "") for asset in release.get("assets", []))
-        fail(f"{owner}/{repo}@{tag_name}: missing release asset {checksum_name}; available: {available}")
-    if verify_downloads:
-        verify_assets(plugin_id, version, zip_asset, checksum_asset, token)
-    return {
-        "version": version,
-        "package": {
-            "downloadUrl": zip_asset["browser_download_url"],
-            "checksumUrl": checksum_asset["browser_download_url"],
-        },
-        "source": {"type": "archive"},
-    }
+        print(
+            f"Skipping {owner}/{repo}@{tag_name}: no {plugin_id}-<version>.zip asset found; available: {available}",
+            file=sys.stderr,
+        )
+    return entries
 
 
 def build_plugin_entry(source, default_owner, token, verify_downloads):
@@ -212,8 +225,10 @@ def build_plugin_entry(source, default_owner, token, verify_downloads):
         fail(f"{owner}/{repo}@{latest_tag}: plugin.json is missing name")
     versions_by_number = {}
     for release in releases:
-        entry = build_version_entry(owner, repo, release, plugin_id, token, verify_downloads)
-        versions_by_number[entry["version"]] = entry
+        for entry in build_version_entries(owner, repo, release, plugin_id, token, verify_downloads):
+            versions_by_number[entry["version"]] = entry
+    if not versions_by_number:
+        fail(f"{owner}/{repo}: no published release has a valid {plugin_id}-<version>.zip and checksum asset pair")
     versions = sorted(versions_by_number.values(), key=lambda item: semver_key(item["version"]), reverse=True)
     latest_version = versions[0]["version"]
     description = options.get("description") or manifest.get("description", "")
