@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.3](https://github.com/Jottrhq/plugins/compare/jottr-plugin-index-v0.3.2...jottr-plugin-index-v0.3.3) (2026-05-30)
+
+
+### Bug Fixes
+
+* Add multiple version of the plugins as artifact ([000ab38](https://github.com/Jottrhq/plugins/commit/000ab386c2a0741dfb8b2882df9891ee7178b615))
+* Add multiple version of the plugins as artifact ([c2c73a6](https://github.com/Jottrhq/plugins/commit/c2c73a60da3eb36f76aacca6a256e9194004ef14))
+
 ## [0.3.2](https://github.com/Jottrhq/plugins/compare/jottr-plugin-index-v0.2.0...jottr-plugin-index-v0.3.2) (2026-05-29)
 
 
