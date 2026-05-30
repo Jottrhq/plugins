@@ -105,9 +105,15 @@ def github_repo_url(owner, repo):
     return f"https://github.com/{owner}/{repo}"
 
 
-def get_release(owner, repo, token):
-    url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
-    return request_json(url, token, f"{owner}/{repo}: fetch latest release")
+def get_releases(owner, repo, token):
+    url = f"https://api.github.com/repos/{owner}/{repo}/releases?per_page=100"
+    releases = request_json(url, token, f"{owner}/{repo}: fetch releases")
+    if not isinstance(releases, list):
+        fail(f"{owner}/{repo}: releases response must be a list")
+    releases = [release for release in releases if not release.get("draft")]
+    if not releases:
+        fail(f"{owner}/{repo}: no published releases found")
+    return releases
 
 
 def get_manifest(owner, repo, tag_name, token):
@@ -135,6 +141,13 @@ def version_from_tag(tag_name):
     return match.group(0) if match else None
 
 
+def semver_key(version):
+    match = SEMVER_RE.fullmatch(version or "")
+    if not match:
+        return (-1, -1, -1, version or "")
+    return (int(match.group(1)), int(match.group(2)), int(match.group(3)), version)
+
+
 def verify_assets(plugin_id, version, zip_asset, checksum_asset, token):
     checksum_text = request_bytes(
         checksum_asset["browser_download_url"],
@@ -157,19 +170,13 @@ def verify_assets(plugin_id, version, zip_asset, checksum_asset, token):
         fail(f"{plugin_id} {version}: zip checksum mismatch: expected {expected}, got {actual}")
 
 
-def build_plugin_entry(source, default_owner, token, verify_downloads):
-    owner, repo, options = normalize_repo(source, default_owner)
-    release = get_release(owner, repo, token)
+def build_version_entry(owner, repo, release, plugin_id, token, verify_downloads):
     tag_name = release.get("tag_name")
     if not tag_name:
-        fail(f"{owner}/{repo}: latest release has no tag_name")
-    manifest = get_manifest(owner, repo, tag_name, token)
-    plugin_id = manifest.get("name")
-    version = manifest.get("version") or version_from_tag(tag_name)
-    if not plugin_id:
-        fail(f"{owner}/{repo}@{tag_name}: plugin.json is missing name")
+        fail(f"{owner}/{repo}: release has no tag_name")
+    version = version_from_tag(tag_name)
     if not version:
-        fail(f"{owner}/{repo}@{tag_name}: plugin.json is missing version and tag has no semver")
+        fail(f"{owner}/{repo}@{tag_name}: release tag has no semantic version")
     zip_name = f"{plugin_id}-{version}.zip"
     checksum_name = f"{zip_name}.sha256"
     zip_asset = get_asset(release, zip_name)
@@ -182,6 +189,33 @@ def build_plugin_entry(source, default_owner, token, verify_downloads):
         fail(f"{owner}/{repo}@{tag_name}: missing release asset {checksum_name}; available: {available}")
     if verify_downloads:
         verify_assets(plugin_id, version, zip_asset, checksum_asset, token)
+    return {
+        "version": version,
+        "package": {
+            "downloadUrl": zip_asset["browser_download_url"],
+            "checksumUrl": checksum_asset["browser_download_url"],
+        },
+        "source": {"type": "archive"},
+    }
+
+
+def build_plugin_entry(source, default_owner, token, verify_downloads):
+    owner, repo, options = normalize_repo(source, default_owner)
+    releases = get_releases(owner, repo, token)
+    latest_release = releases[0]
+    latest_tag = latest_release.get("tag_name")
+    if not latest_tag:
+        fail(f"{owner}/{repo}: latest release has no tag_name")
+    manifest = get_manifest(owner, repo, latest_tag, token)
+    plugin_id = manifest.get("name")
+    if not plugin_id:
+        fail(f"{owner}/{repo}@{latest_tag}: plugin.json is missing name")
+    versions_by_number = {}
+    for release in releases:
+        entry = build_version_entry(owner, repo, release, plugin_id, token, verify_downloads)
+        versions_by_number[entry["version"]] = entry
+    versions = sorted(versions_by_number.values(), key=lambda item: semver_key(item["version"]), reverse=True)
+    latest_version = versions[0]["version"]
     description = options.get("description") or manifest.get("description", "")
     display_name = options.get("displayName") or manifest.get("displayName") or plugin_id
     return {
@@ -189,18 +223,9 @@ def build_plugin_entry(source, default_owner, token, verify_downloads):
         "displayName": display_name,
         "description": description,
         "repository": github_repo_url(owner, repo),
-        "latestVersion": version,
+        "latestVersion": latest_version,
         "defaultEnabled": bool(options.get("defaultEnabled", True)),
-        "versions": [
-            {
-                "version": version,
-                "package": {
-                    "downloadUrl": zip_asset["browser_download_url"],
-                    "checksumUrl": checksum_asset["browser_download_url"],
-                },
-                "source": {"type": "archive"},
-            }
-        ],
+        "versions": versions,
     }
 
 

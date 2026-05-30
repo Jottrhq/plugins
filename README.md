@@ -4,7 +4,7 @@ This repository is the central plugin index consumed by Jottr.
 
 `plugin-sources.json` is the small human-maintained file. Add plugin repositories there, then CI generates the app-facing `plugins.json` and `plugins.json.sha256` from each plugin repository's latest GitHub release.
 
-`plugins.json` lists each plugin, available version, repository URL, release download URL, and checksum URL for the zip package. `plugins.json.sha256` checksums the current index content so the app can reject a tampered index after fetching it.
+`plugins.json` lists each plugin, all indexed release versions, repository URL, release download URL, and checksum URL for each zip package. `plugins.json.sha256` checksums the current index content so the app can reject a tampered index after fetching it.
 
 Plugin packages are released from their own repositories. Each plugin repo owns its version history, release tag, zip package, and `.zip.sha256` asset, so plugin releases do not depend on the main app tag.
 
@@ -38,7 +38,7 @@ You can also run the sync workflow manually and pass `plugin=rss-feed-plugin`. T
 python scripts/sync-plugin-index.py
 ```
 
-The sync script reads each plugin repo's latest release, loads that release tag's `plugin.json`, finds `<plugin-name>-<version>.zip` and `<plugin-name>-<version>.zip.sha256`, verifies the zip checksum, and writes the generated registry.
+The sync script reads each plugin repo's published releases, loads the latest release tag's `plugin.json` for display metadata, indexes every semantic-versioned release, finds `<plugin-name>-<version>.zip` and `<plugin-name>-<version>.zip.sha256`, verifies each zip checksum, and writes the generated registry with all available versions.
 
 Use `GITHUB_TOKEN` for private repos or higher API limits:
 
