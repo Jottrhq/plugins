@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.4](https://github.com/Jottrhq/plugins/compare/jottr-plugin-index-v0.3.3...jottr-plugin-index-v0.3.4) (2026-05-30)
+
+
+### Bug Fixes
+
+* index all plugin release versions ([91bb111](https://github.com/Jottrhq/plugins/commit/91bb1112e2bb616821147c92690469012170d20e))
+* index all plugin release versions ([50b7a27](https://github.com/Jottrhq/plugins/commit/50b7a2786e9eee3214a96f811fbca5ffc2d65bea))
+
 ## [0.3.3](https://github.com/Jottrhq/plugins/compare/jottr-plugin-index-v0.3.2...jottr-plugin-index-v0.3.3) (2026-05-30)
 
 
