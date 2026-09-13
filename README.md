@@ -17,7 +17,6 @@ For a Jottrhq plugin repo, add only the repository name:
   "schemaVersion": 1,
   "defaultOwner": "Jottrhq",
   "plugins": [
-    "browser-plugin",
     "rss-feed-plugin",
     "mermaid-charts-plugin"
   ]
