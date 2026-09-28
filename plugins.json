@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-19T21:33:46Z",
+  "updatedAt": "2026-09-28T20:43:13Z",
   "checksumAlgorithm": "sha256",
   "plugins": [
     {
@@ -28,9 +28,19 @@
       "displayName": "RSS Feed Reader",
       "description": "Adds the RSS feed reader tab.",
       "repository": "https://github.com/Jottrhq/rss-feed-plugin",
-      "latestVersion": "0.3.2",
+      "latestVersion": "0.3.3",
       "defaultEnabled": true,
       "versions": [
+        {
+          "version": "0.3.3",
+          "package": {
+            "downloadUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.3/rss-feed-0.3.3.zip",
+            "checksumUrl": "https://github.com/Jottrhq/rss-feed-plugin/releases/download/rss-feed-v0.3.3/rss-feed-0.3.3.zip.sha256"
+          },
+          "source": {
+            "type": "archive"
+          }
+        },
         {
           "version": "0.3.2",
           "package": {
